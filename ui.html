@@ -1,0 +1,25 @@
+<button id="find">Find Texts</button>
+<button id="cancel">Cancel</button>
+<table id="texts"></table>
+<script>
+  onmessage = (data) => {
+    console.log("Content Received", event);
+    let texts = event.data.pluginMessage.content;
+    const table = document.getElementById("texts");
+    texts.forEach((text) => {
+      let tr = document.createElement("tr");
+      let td = document.createElement("td");
+      td.innerHTML = text.content;
+      tr.appendChild(td);
+      table.appendChild(tr);
+    });
+  };
+
+  document.getElementById("find").onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "find-texts" } }, "*");
+  };
+
+  document.getElementById("cancel").onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
+  };
+</script>
