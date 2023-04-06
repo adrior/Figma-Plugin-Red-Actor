@@ -1,19 +1,123 @@
 <button id="find">Find Texts</button>
 <button id="cancel">Cancel</button>
-<table id="texts"></table>
+
+<div id="container"></div>
+
+<style>
+  .group-title {
+    font-weight: bold;
+  }
+  .group-item {
+    width: 200px;
+    padding: 20px;
+    border: 1px solid #999;
+    margin-right: 10px;
+    background-color: var(--figma-color-bg);
+  }
+  .group-content {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+
 <script>
   onmessage = (data) => {
     console.log("Content Received", event);
     let texts = event.data.pluginMessage.content;
-    const table = document.getElementById("texts");
-    texts.forEach((text) => {
-      let tr = document.createElement("tr");
-      let td = document.createElement("td");
-      td.innerHTML = text.content;
-      tr.appendChild(td);
-      table.appendChild(tr);
+    let groupedTexts = [];
+    for (i in texts) {
+      const { key, content } = texts[i];
+      let group = groupedTexts.find((el) => el && el[0].key === key);
+      if (!group) {
+        group = [];
+        groupedTexts.push(group);
+      }
+      let keyItem = group.find((el) => el.content === content);
+      if (!keyItem) {
+        group.push({ key, content, count: 1 });
+      } else {
+        keyItem.count++;
+      }
+    }
+    document.getElementById("container").innerHTML = "";
+
+    groupedTexts.forEach((group) => {
+      const groupContainer = elem("group");
+      const title = elem("group-title");
+      const content = elem("group-content");
+      groupContainer.appendChild(title);
+      groupContainer.appendChild(content);
+      title.innerHTML = group[0].key;
+      group.forEach((item) => {
+        let itemEl = itemTemplate(item.key, item.content, item.count);
+        content.appendChild(itemEl);
+      });
+      document.getElementById("container").appendChild(groupContainer);
     });
+
+    // let html = groupedTexts
+    //   .map(
+    //     (group) => `<div class="group">
+    //   <div class="group-title">${group[0].key}</div>
+    //   <div class="group-content">${group
+    //     .map(
+    //       (item) =>
+    //         `<div class="group-item">${item.content} (${item.count})</div>`
+    //     )
+    //     .join("\n")}</div>
+    // </div>`
+    //   )
+    //   .join("\n");
+    // console.log(groupedTexts);
+    // let
+    // texts.forEach((text) => {
+    //   let tr = document.createElement("tr");
+    //   let td = document.createElement("td");
+    //   td.innerHTML = text.content;
+    //   tr.appendChild(td);
+    //   table.appendChild(tr);
+    // });
   };
+
+  function itemTemplate(key, content, count) {
+    const conteiner = elem("group-item");
+    const itemContent = elem("item-content");
+    const itemCount = elem("item-count");
+    const itemButtonsContainer = elem("item-buttons-container");
+    const itemText = elem("item-text");
+    conteiner.appendChild(itemContent);
+    conteiner.appendChild(itemButtonsContainer);
+    itemContent.appendChild(itemText);
+    itemContent.appendChild(itemCount);
+    const findButton = elem("item-button-find", "button");
+    findButton.innerHTML = "Show";
+    findButton.onclick = (e) => {
+      window.parent.postMessage(
+        { pluginMessage: { type: "find-on-page", key, content, count } },
+        "*"
+      );
+    };
+    itemButtonsContainer.appendChild(findButton);
+    const replaceWrong = elem("item-button-find", "button");
+    replaceWrong.innerHTML = "Replace other";
+    replaceWrong.onclick = (e) => {
+      window.parent.postMessage(
+        { pluginMessage: { type: "replace-other", key, content, count } },
+        "*"
+      );
+    };
+    itemButtonsContainer.appendChild(replaceWrong);
+    itemCount.innerHTML = count;
+    itemText.innerHTML = content;
+    return conteiner;
+  }
+
+  function elem(className = "item", tag = "div", id = null) {
+    const elem = document.createElement(tag);
+    elem.className = className;
+    if (id) elem.id = id;
+    return elem;
+  }
 
   document.getElementById("find").onclick = () => {
     parent.postMessage({ pluginMessage: { type: "find-texts" } }, "*");
