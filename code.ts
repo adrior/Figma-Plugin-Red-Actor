@@ -11,6 +11,7 @@ figma.showUI(__html__, { themeColors: true, width: 400, height: 600 });
 // Calls to "parent.postMessage" from within the HTML page will trigger this
 // callback. The callback will be passed the "pluginMessage" property of the
 // posted message.
+
 figma.ui.onmessage = (msg) => {
   // One way of distinguishing between different types of messages sent from
   // your HTML page is to use an object with a "type" property like this.
@@ -29,15 +30,17 @@ figma.ui.onmessage = (msg) => {
 
   function findTexts() {
     let nodes = figma.currentPage.findAllWithCriteria({ types: ["TEXT"] });
-    let texts = nodes.map((textLayer) => {
-      return {
-        key: textLayer.name,
-        content: textLayer.characters,
-      };
-    });
+    let texts = nodes
+      .map((textLayer) => {
+        return {
+          key: textLayer.name,
+          content: textLayer.characters,
+        };
+      })
+      .filter((el) => /^(([a-z0-9\-]+\.)+([a-z0-9\-]+))$/gm.test(el.key));
     figma.ui.postMessage({ type: "text-received", content: texts });
-    figma.currentPage.selection = nodes;
-    figma.viewport.scrollAndZoomIntoView(nodes);
+    // figma.currentPage.selection = nodes;
+    // figma.viewport.scrollAndZoomIntoView(nodes);
   }
 
   if (msg.type === "find-texts") {
@@ -46,6 +49,11 @@ figma.ui.onmessage = (msg) => {
 
   if (msg.type === "cancel") {
     figma.closePlugin();
+  }
+  if (msg.type === "resize") {
+    const w = 240;
+    figma.ui.resize(w, msg.h);
+    figma.ui.reposition(msg.w, 0);
   }
 
   if (msg.type === "find-on-page") {

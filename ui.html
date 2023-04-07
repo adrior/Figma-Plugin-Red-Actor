@@ -8,15 +8,59 @@
     font-weight: bold;
   }
   .group-item {
-    width: 200px;
     padding: 20px;
-    border: 1px solid #999;
-    margin-right: 10px;
+    /* border: 1px solid #aeaeae; */
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.3), 0px 1px 4px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
     background-color: var(--figma-color-bg);
   }
   .group-content {
     display: flex;
     flex-direction: column;
+  }
+
+  .item-count {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 15px;
+    height: 15px;
+    border-radius: 100%;
+    background: rgb(9, 9, 9);
+    color: white;
+    text-align: center;
+    padding: 5px 5px;
+  }
+
+  .item-count-1 {
+    background-color: rgb(226, 43, 171);
+  }
+
+  .item-count-2 {
+    background-color: rgb(255, 132, 0);
+  }
+
+  .group-item {
+    position: relative;
+    margin-top: 8px;
+  }
+
+  body {
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+  }
+
+  .item-buttons-container {
+    display: flex;
+    margin: 10px 0px 0px;
+  }
+
+  button.item-button-find {
+    margin-right: 10px;
+  }
+
+  .group {
+    margin-top: 10px;
   }
 </style>
 
@@ -109,6 +153,7 @@
     itemButtonsContainer.appendChild(replaceWrong);
     itemCount.innerHTML = count;
     itemText.innerHTML = content;
+    itemCount.classList.add(`item-count-${count}`);
     return conteiner;
   }
 
@@ -126,4 +171,15 @@
   document.getElementById("cancel").onclick = () => {
     parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
   };
+
+  parent.postMessage(
+    {
+      pluginMessage: {
+        type: "resize",
+        w: window.outerWidth,
+        h: window.outerHeight,
+      },
+    },
+    "*"
+  );
 </script>
